@@ -5,6 +5,7 @@ import { Confetti } from "./Confetti";
 import { DrumRoll } from "./DrumRoll";
 import { Emoji } from "./Emoji";
 import { Podium, type PodiumEntry, placesOf } from "./Podium";
+import { InstagramIcon, WhatsAppIcon, XIcon } from "./SocialIcons";
 import { Avatar, Button } from "./ui";
 
 /** Destaque do vencedor mostrado durante os tambores (ex.: a melhor rodada na Adedonha). */
@@ -161,18 +162,24 @@ export function FinalReveal({ game, entries, subtitle, unit = "pts", highlight, 
 
       {done && (
         <>
-          <div className="flex animate-fade-up flex-col gap-2 rounded-blob bg-surface-2 p-4 [animation-delay:1s]">
+          <div className="flex animate-fade-up flex-col gap-2 rounded-blob bg-surface p-4 shadow-cozy [animation-delay:1s]">
             <p className="text-center font-display text-lg font-bold">
               <Emoji e="🎉" /> Compartilhar o ranking
             </p>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="soft" className="h-auto flex-col gap-0 bg-surface py-2.5" disabled={!!sharing} onClick={() => share("story")}>
+              <Button variant="soft" className="h-auto flex-col gap-1.5 py-3" disabled={!!sharing} onClick={() => share("story")}>
+                {/* Instagram e WhatsApp lado a lado, um encavalado no outro */}
+                <span className="flex -space-x-2.5">
+                  <InstagramIcon className="relative z-10 -rotate-6" />
+                  <WhatsAppIcon className="rotate-6" />
+                </span>
                 <span>{sharing === "story" ? "Preparando…" : "Story"}</span>
-                <span className="text-xs font-bold text-muted">Instagram, WhatsApp</span>
+                <span className="-mt-1 text-xs font-bold text-muted">Instagram, WhatsApp</span>
               </Button>
-              <Button variant="soft" className="h-auto flex-col gap-0 bg-surface py-2.5" disabled={!!sharing} onClick={() => share("post")}>
+              <Button variant="soft" className="h-auto flex-col gap-1.5 py-3" disabled={!!sharing} onClick={() => share("post")}>
+                <XIcon />
                 <span>{sharing === "post" ? "Preparando…" : "Post"}</span>
-                <span className="text-xs font-bold text-muted">X, feed</span>
+                <span className="-mt-1 text-xs font-bold text-muted">X, feed</span>
               </Button>
             </div>
             <p className="text-center text-xs text-muted">
