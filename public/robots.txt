@@ -2,3 +2,5 @@
 User-agent: *
 Allow: /
 Disallow: /sala/
+
+Sitemap: https://joguitos.joguitos.workers.dev/sitemap.xml
