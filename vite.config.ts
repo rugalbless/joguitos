@@ -9,7 +9,7 @@ import { type Plugin, defineConfig } from "vite";
  * para a imagem de prévia e o link canônico. Vazio, os links ficam relativos (funciona, mas a
  * prévia em redes sociais pode não aparecer).
  */
-const SITE_URL = process.env.SITE_URL ?? "";
+const SITE_URL = process.env.SITE_URL ?? "https://joguitos.joguitos.workers.dev";
 
 /** Troca %SITE_URL% no index.html e só inclui o link canônico quando o endereço existe. */
 function siteUrl(): Plugin {
