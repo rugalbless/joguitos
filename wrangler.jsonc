@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "joguitos",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-11-01",
+  // O site (React) é servido como arquivos estáticos; só /parties/* (WebSockets das salas) passa pelo Worker.
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/parties/*"]
+  },
+  // Cada sala é um Durable Object. Classes SQLite são as únicas liberadas no plano gratuito.
+  "durable_objects": {
+    "bindings": [{ "name": "Room", "class_name": "Room" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }],
+  "observability": { "enabled": true }
+}

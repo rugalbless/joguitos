@@ -1,0 +1,4 @@
+# As salas são temporárias e privadas: não faz sentido aparecerem no Google.
+User-agent: *
+Allow: /
+Disallow: /sala/

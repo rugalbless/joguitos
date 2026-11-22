@@ -1,0 +1,18 @@
+node_modules
+dist
+.wrangler
+.dev.vars*
+.env*
+*.log
+.DS_Store
+
+# Imagens originais dos mascotes (10 MB). O site usa as versões recortadas em public/mascotes/.
+/mascotes/
+
+# Nunca subir chaves ou configurações locais
+*.pem
+*.key
+.claude/settings.local.json
+
+# Pastas temporárias de teste
+.preview-tmp/

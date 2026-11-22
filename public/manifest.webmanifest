@@ -1,0 +1,16 @@
+{
+  "name": "Joguitos",
+  "short_name": "Joguitos",
+  "description": "Jogos de festa pra jogar com os amigos, cada um no seu celular.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#dcc9a9",
+  "theme_color": "#b83a2d",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
