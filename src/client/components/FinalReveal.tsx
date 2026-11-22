@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from "react";
+import { shareRanking } from "../lib/shareRanking";
 import { playDrumroll, playReveal } from "../lib/sound";
 import { Confetti } from "./Confetti";
 import { DrumRoll } from "./DrumRoll";
 import { Emoji } from "./Emoji";
 import { Podium, type PodiumEntry, placesOf } from "./Podium";
-import { Avatar, Button, Card } from "./ui";
+import { Avatar, Button } from "./ui";
 
 /** Destaque do vencedor mostrado durante os tambores (ex.: a melhor rodada na Adedonha). */
 export type WinnerHighlight = { label: string; title: string; chips?: string[] };
 
 type Props = {
+  /** Nome do jogo, para o card de compartilhar. */
+  game: string;
   /** Ordenado do melhor pro pior. */
   entries: PodiumEntry[];
   /** Linha pequena acima de "Ranking final" (ex.: "3 rodadas · letras A, M, P"). */
@@ -32,7 +35,7 @@ const ORDER: Step[] = ["podium", "dark", "drums", "points", "best", "reveal", "d
 const at = (step: Step, current: Step) => ORDER.indexOf(current) >= ORDER.indexOf(step);
 
 /** Ranking final igual em todos os jogos: pódio, suspense com tambores e revelação do 1º lugar. */
-export function FinalReveal({ entries, subtitle, unit = "pts", highlight, isHost, onRestart }: Props) {
+export function FinalReveal({ game, entries, subtitle, unit = "pts", highlight, isHost, onRestart }: Props) {
   // Quem ficou fora do pódio (4º em diante, contando empates).
   const places = placesOf(entries);
   const rest = entries.map((e, i) => ({ ...e, place: places[i] })).filter((e) => e.place >= 3);
@@ -60,6 +63,21 @@ export function FinalReveal({ entries, subtitle, unit = "pts", highlight, isHost
     }
   }, [step]);
 
+  const [sharing, setSharing] = useState(false);
+  async function share() {
+    setSharing(true);
+    try {
+      await shareRanking(
+        game,
+        subtitle,
+        unit,
+        entries.map((e, i) => ({ name: e.player.name, avatar: e.player.avatar, handle: e.player.handle, score: e.score, place: places[i] })),
+      );
+    } finally {
+      setSharing(false);
+    }
+  }
+
   function skip() {
     stopDrums.current();
     setStep("done");
@@ -69,31 +87,38 @@ export function FinalReveal({ entries, subtitle, unit = "pts", highlight, isHost
 
   return (
     <>
-      <div className="animate-fade-up text-center">
-        <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-muted">{subtitle}</p>
-        <h2 className="text-3xl font-bold">Ranking final</h2>
-      </div>
+      {/* Painel mais escuro atrás do ranking: a gradezinha do fundo não aparece por trás do pódio. */}
+      <section className="flex flex-col gap-4 rounded-blob bg-surface-2 p-4 pb-5 shadow-cozy">
+        <div className="animate-fade-up text-center">
+          <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-muted">{subtitle}</p>
+          <h2 className="text-3xl font-bold">Ranking final</h2>
+        </div>
 
-      <Podium entries={entries} hideFirst={!done} unit={unit} />
+        <Podium entries={entries} hideFirst={!done} unit={unit} />
+
+        {done && rest.length > 0 && (
+          <div className="animate-fade-up rounded-2xl bg-surface p-4 [animation-delay:0.9s]">
+            <ol className="flex flex-col gap-2">
+              {rest.map((e) => (
+                <li key={e.player.id} className="flex items-center gap-3">
+                  <span className="w-6 text-center font-display text-muted">{e.place + 1}º</span>
+                  <Avatar avatar={e.player.avatar} size="sm" online={e.player.connected} />
+                  <span className="flex-1 truncate font-bold">{e.player.name}</span>
+                  <span className="font-display font-bold tabular-nums">
+                    {e.score} <span className="text-xs text-muted">{unit}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+      </section>
 
       {done && (
         <>
-          {rest.length > 0 && (
-            <Card className="animate-fade-up [animation-delay:0.9s]">
-              <ol className="flex flex-col gap-2">
-                {rest.map((e) => (
-                  <li key={e.player.id} className="flex items-center gap-3">
-                    <span className="w-6 text-center font-display text-muted">{e.place + 1}º</span>
-                    <Avatar avatar={e.player.avatar} size="sm" online={e.player.connected} />
-                    <span className="flex-1 truncate font-bold">{e.player.name}</span>
-                    <span className="font-display font-bold tabular-nums">
-                      {e.score} <span className="text-xs text-muted">{unit}</span>
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </Card>
-          )}
+          <Button variant="soft" size="lg" className="animate-fade-up [animation-delay:1s]" disabled={sharing} onClick={share}>
+            <Emoji e="🎉" /> {sharing ? "Preparando…" : "Compartilhar ranking"}
+          </Button>
 
           {isHost ? (
             <Button size="lg" className="animate-fade-up [animation-delay:1.2s]" onClick={onRestart}>

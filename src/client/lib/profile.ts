@@ -10,6 +10,8 @@ export type Profile = {
   name: string;
   /** Mascote em uso: um id de AVATARS ou a foto (data URL). */
   avatar: string;
+  /** @ do Instagram (opcional), para marcarem a pessoa no card do ranking. */
+  handle?: string;
   /** Última foto escolhida, guardada para poder voltar a ela depois de testar outro mascote. */
   photo?: string;
 };
@@ -21,7 +23,7 @@ function load(): Profile {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const p = JSON.parse(raw) as Partial<Profile>;
-      if (p.id) return { id: p.id, name: p.name ?? "", avatar: validAvatar(p.avatar) ? p.avatar : randomAvatar(), photo: p.photo };
+      if (p.id) return { id: p.id, name: p.name ?? "", avatar: validAvatar(p.avatar) ? p.avatar : randomAvatar(), photo: p.photo, handle: p.handle };
     }
   } catch {
     // navegador anônimo / storage bloqueado: segue com perfil temporário

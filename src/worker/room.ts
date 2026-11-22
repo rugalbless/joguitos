@@ -2,6 +2,7 @@ import { type Connection, Server, type WSMessage } from "partyserver";
 import { getGame } from "../shared/games";
 import {
   type ClientMessage,
+  cleanHandle,
   isValidAvatar,
   LIMITS,
   type Player,
@@ -88,13 +89,14 @@ export class Room extends Server<Env> {
         if (!isValidAvatar(msg.avatar)) return "Essa foto não deu certo. Tenta outra?";
         const existing = this.findPlayer(playerId);
         if (existing) {
-          Object.assign(existing, { name, avatar: msg.avatar, connected: true });
+          Object.assign(existing, { name, avatar: msg.avatar, handle: cleanHandle(msg.handle), connected: true });
         } else {
           if (this.state.players.length >= LIMITS.maxPlayers) return "A sala está cheia.";
           this.state.players.push({
             id: playerId,
             name,
             avatar: msg.avatar,
+            handle: cleanHandle(msg.handle),
             score: 0,
             connected: true,
             joinedAt: Date.now(),

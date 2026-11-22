@@ -492,6 +492,7 @@ function Final({ s, isHost, act, player }: Props) {
 
   return (
     <FinalReveal
+      game="Não Fale o Mesmo que Eu"
       entries={entries}
       unit="vidas"
       subtitle={`${s.round} ${s.round === 1 ? "rodada" : "rodadas"} · ${s.config.mode === "maquina" ? "contra a máquina" : "um de nós escolhe"}`}

@@ -11,6 +11,7 @@ export function Final({ s, isHost, act, player }: AdedonhaProps) {
 
   return (
     <FinalReveal
+      game="Adedonha"
       entries={entries}
       subtitle={`${s.config.rounds} ${s.config.rounds === 1 ? "rodada" : "rodadas"} · letras ${s.usedLetters.join(", ")}`}
       highlight={bestRound(s.history ?? [], entries[0]?.player.id)}

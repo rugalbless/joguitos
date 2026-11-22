@@ -1,7 +1,7 @@
 import { type ChangeEvent, type FormEvent, Suspense, useRef, useState } from "react";
 import { Link, Navigate, useParams } from "react-router";
 import { GAMES, getGame } from "../../shared/games";
-import { LIMITS, isValidRoomCode } from "../../shared/protocol";
+import { LIMITS, cleanHandle, isValidRoomCode } from "../../shared/protocol";
 import { mascotUrl } from "../../shared/mascots";
 import { GAME_SCREENS } from "../games";
 import { Layout } from "../components/Layout";
@@ -91,6 +91,7 @@ type WithState = { room: RoomApi & { state: NonNullable<RoomApi["state"]> } };
 function ProfileForm({ profile, onSave }: { profile: Profile; onSave: (p: Omit<Profile, "id">) => void }) {
   const [name, setName] = useState(profile.name);
   const [avatar, setAvatar] = useState(profile.avatar);
+  const [handle, setHandle] = useState(profile.handle ? `@${profile.handle}` : "");
   const [photo, setPhoto] = useState(profile.photo ?? (isPhotoAvatar(profile.avatar) ? profile.avatar : undefined));
   const [photoError, setPhotoError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -111,7 +112,7 @@ function ProfileForm({ profile, onSave }: { profile: Profile; onSave: (p: Omit<P
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    if (name.trim()) onSave({ name: name.trim(), avatar, photo });
+    if (name.trim()) onSave({ name: name.trim(), avatar, photo, handle: cleanHandle(handle) });
   }
 
   const usingPhoto = !!photo && avatar === photo;
@@ -133,6 +134,18 @@ function ProfileForm({ profile, onSave }: { profile: Profile; onSave: (p: Omit<P
           enterKeyHint="done"
           className="h-14 rounded-2xl border-2 border-line bg-bg px-4 text-center text-xl font-bold outline-none placeholder:font-semibold placeholder:text-muted/60 focus:border-accent"
         />
+        <label className="-mt-2 flex flex-col gap-1">
+          <span className="text-center text-xs font-bold text-muted">Seu @ do Instagram (opcional, pra te marcarem no ranking)</span>
+          <input
+            value={handle}
+            onChange={(e) => setHandle(e.target.value.replace(/\s/g, "").slice(0, 31))}
+            placeholder="@seuperfil"
+            autoComplete="off"
+            autoCapitalize="none"
+            autoCorrect="off"
+            className="h-11 rounded-2xl border-2 border-line bg-bg px-4 text-center font-bold outline-none placeholder:font-semibold placeholder:text-muted/60 focus:border-accent"
+          />
+        </label>
         <fieldset>
           <legend className="mb-2 text-sm font-bold text-muted">Escolha seu mascote</legend>
           <div className="grid grid-cols-8 gap-1.5 px-0.5">

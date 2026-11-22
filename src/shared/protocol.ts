@@ -6,6 +6,8 @@ export type Player = {
   id: string;
   name: string;
   avatar: string;
+  /** @ do Instagram (opcional, sem o "@"), para marcar no card de compartilhar o ranking. */
+  handle?: string;
   score: number;
   connected: boolean;
   joinedAt: number;
@@ -23,7 +25,7 @@ export type RoomState = {
 };
 
 export type ClientMessage =
-  | { type: "join"; name: string; avatar: string }
+  | { type: "join"; name: string; avatar: string; handle?: string }
   | { type: "select-game"; gameId: string }
   | { type: "start" }
   | { type: "end-game" }
@@ -45,6 +47,13 @@ export const LIMITS = {
   /** Id de mascote oficial ou foto em data URL (JPEG/PNG/WebP pequeno). */
   maxAvatarLength: 16_000,
 } as const;
+
+/** Limpa o @ digitado ("@Fulano.Silva " → "fulano.silva"). Vazio ou inválido vira undefined. */
+export function cleanHandle(raw: unknown): string | undefined {
+  if (typeof raw !== "string") return undefined;
+  const h = raw.trim().replace(/^@+/, "").toLowerCase();
+  return /^[a-z0-9._]{1,30}$/.test(h) ? h : undefined;
+}
 
 export function isValidAvatar(avatar: unknown): avatar is string {
   if (typeof avatar !== "string" || !avatar) return false;

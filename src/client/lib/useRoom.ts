@@ -46,9 +46,9 @@ export function useRoom(code: string, profile: Profile) {
   // Entra (ou atualiza nome/avatar) quando o perfil muda com a conexão aberta.
   useEffect(() => {
     if (status === "open" && profile.name) {
-      send({ type: "join", name: profile.name, avatar: profile.avatar });
+      send({ type: "join", name: profile.name, avatar: profile.avatar, handle: profile.handle });
     }
-  }, [status, profile.name, profile.avatar, send]);
+  }, [status, profile.name, profile.avatar, profile.handle, send]);
 
   // Erros somem sozinhos.
   useEffect(() => {

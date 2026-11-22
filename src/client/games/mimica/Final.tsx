@@ -22,6 +22,7 @@ export function Final({ s, isHost, act, player }: MimicaProps) {
 
   return (
     <FinalReveal
+      game="Mímica Relâmpago"
       entries={entries}
       subtitle={`${s.config.rounds} ${s.config.rounds === 1 ? "rodada" : "rodadas"} de mímica`}
       highlight={highlight}
