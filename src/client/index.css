@@ -156,6 +156,12 @@
   to { clip-path: inset(0 0 0 0); }
 }
 
+/* Polaroides do mural balançando devagar (Mural.tsx). */
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
 /* Fumaça do café (CoffeeCup.tsx). */
 @keyframes steam {
   0% { transform: translateY(6px) scaleY(0.7); opacity: 0; }

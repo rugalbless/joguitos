@@ -394,4 +394,16 @@ export const ART: Record<string, string> = {
     <circle cx="26.5" cy="29.5" r="1.6" fill="#fff"/><circle cx="40.5" cy="29.5" r="1.6" fill="#fff"/>
     <path d="M24 49H40" stroke="${SILVER[2]}" stroke-width="3" stroke-linecap="round"/>
     ${hl(19, 17, 8, 2.5, -10, 0.8)}`,
+
+  // galeria (foto com moldura)
+  "🖼️": `${defs(lin("gl-f", WOOD, 1, 1), lin("gl-s", BLUE, 0, 1), rad("gl-u", YELLOW), lin("gl-h", GREEN, 0, 1), lin("gl-b", ["#9fd2a5", "#5aa86a", "#2f7a45"], 0, 1))}
+    <g transform="rotate(-8 34 30)">
+      <rect x="14" y="10" width="44" height="36" rx="6" fill="${WHITE[1]}" opacity=".85"/>
+    </g>
+    <rect x="6" y="14" width="48" height="40" rx="7" fill="url(#gl-f)"/>
+    <rect x="11" y="19" width="38" height="30" rx="3.5" fill="url(#gl-s)"/>
+    <circle cx="40" cy="27" r="4.6" fill="url(#gl-u)"/>
+    <path d="M11 49V42L21 32L31 41L36 37L49 47V49Z" fill="url(#gl-h)"/>
+    <path d="M11 49V45Q24 39 33 44Q41 48 49 46V49Z" fill="url(#gl-b)"/>
+    ${hl(16, 22, 4, 1.6, -15, 0.7)}${hl(14, 16.5, 8, 1.4, 0, 0.5)}`,
 };

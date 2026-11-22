@@ -2,5 +2,7 @@
 User-agent: *
 Allow: /
 Disallow: /sala/
+Disallow: /mural/admin
+Disallow: /api/
 
 Sitemap: https://joguitos.joguitos.workers.dev/sitemap.xml

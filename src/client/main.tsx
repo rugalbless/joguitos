@@ -9,6 +9,8 @@ import { Emoji } from "./components/Emoji";
 import { Button } from "./components/ui";
 import { Home } from "./pages/Home";
 import { GamePage } from "./pages/GamePage";
+import { Mural } from "./pages/Mural";
+import { MuralAdmin } from "./pages/MuralAdmin";
 import { Sobre } from "./pages/Sobre";
 import { RoomPage } from "./pages/Room";
 import "./index.css";
@@ -73,6 +75,8 @@ const router = createBrowserRouter([
       { path: "/sala/:code", element: <RoomPage /> },
       { path: "/sobre", element: <Sobre /> },
       { path: "/jogos/:id", element: <GamePage /> },
+      { path: "/mural", element: <Mural /> },
+      { path: "/mural/admin", element: <MuralAdmin /> },
       { path: "/manifesto", element: <Navigate to="/sobre" replace /> },
       {
         path: "*",

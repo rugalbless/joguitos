@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { Clover } from "./BrandMark";
+import { Emoji } from "./Emoji";
 
 /**
  * Moldura das páginas. O cabeçalho fica preso no topo com fundo desfocado (o conteúdo passa
@@ -14,8 +15,15 @@ export function Layout({ children, right }: { children: ReactNode; right?: React
           <img src="/favicon.svg" alt="" className="size-9" />
           <span className="font-display text-2xl font-bold tracking-tight">joguitos</span>
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {right}
+          <Link
+            to="/mural"
+            className="flex h-10 items-center gap-1.5 rounded-full bg-surface-2 px-3 font-display text-sm font-bold transition hover:bg-line active:scale-95"
+          >
+            <Emoji e="📷" className="text-lg" />
+            Mural
+          </Link>
           <Link
             to="/sobre"
             aria-label="Sobre o Joguitos"
