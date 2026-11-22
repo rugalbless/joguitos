@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { shareRanking } from "../lib/shareRanking";
+import { type CardFormat, canShareFiles, shareRanking } from "../lib/shareRanking";
 import { playDrumroll, playFanfare, playReveal, playSample, preloadSample } from "../lib/sound";
 import { Confetti } from "./Confetti";
 import { DrumRoll } from "./DrumRoll";
@@ -81,18 +81,19 @@ export function FinalReveal({ game, entries, subtitle, unit = "pts", highlight, 
     if (step === "reveal") revealSound.current();
   }, [step]);
 
-  const [sharing, setSharing] = useState(false);
-  async function share() {
-    setSharing(true);
+  const [sharing, setSharing] = useState<CardFormat | null>(null);
+  async function share(format: CardFormat) {
+    setSharing(format);
     try {
       await shareRanking(
         game,
         subtitle,
         unit,
         entries.map((e, i) => ({ name: e.player.name, avatar: e.player.avatar, handle: e.player.handle, score: e.score, place: places[i] })),
+        format,
       );
     } finally {
-      setSharing(false);
+      setSharing(null);
     }
   }
 
@@ -134,9 +135,26 @@ export function FinalReveal({ game, entries, subtitle, unit = "pts", highlight, 
 
       {done && (
         <>
-          <Button variant="soft" size="lg" className="animate-fade-up [animation-delay:1s]" disabled={sharing} onClick={share}>
-            <Emoji e="🎉" /> {sharing ? "Preparando…" : "Compartilhar ranking"}
-          </Button>
+          <div className="flex animate-fade-up flex-col gap-2 rounded-blob bg-surface-2 p-4 [animation-delay:1s]">
+            <p className="text-center font-display text-lg font-bold">
+              <Emoji e="🎉" /> Compartilhar o ranking
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="soft" className="h-auto flex-col gap-0 bg-surface py-2.5" disabled={!!sharing} onClick={() => share("story")}>
+                <span>{sharing === "story" ? "Preparando…" : "Story"}</span>
+                <span className="text-xs font-bold text-muted">Instagram, WhatsApp</span>
+              </Button>
+              <Button variant="soft" className="h-auto flex-col gap-0 bg-surface py-2.5" disabled={!!sharing} onClick={() => share("post")}>
+                <span>{sharing === "post" ? "Preparando…" : "Post"}</span>
+                <span className="text-xs font-bold text-muted">X, feed</span>
+              </Button>
+            </div>
+            <p className="text-center text-xs text-muted">
+              {canShareFiles()
+                ? "Abre a tela de compartilhar do celular. No story, toque nos @ do card para marcar a galera."
+                : "Neste aparelho a imagem é baixada. É só postar a partir da galeria."}
+            </p>
+          </div>
 
           {isHost ? (
             <Button size="lg" className="animate-fade-up [animation-delay:1.2s]" onClick={onRestart}>

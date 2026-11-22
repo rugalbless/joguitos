@@ -34,7 +34,7 @@ function RoomInner({ code }: { code: string }) {
       aria-label={`Editar perfil (${status === "open" ? "conectado" : "reconectando"})`}
       title={status === "open" ? "Conectado" : "Reconectando…"}
     >
-      <Avatar avatar={profile.avatar} size="md" online={status === "open"} />
+      <Avatar avatar={profile.avatar} size="md" online={status === "open"} status />
     </button>
   );
 

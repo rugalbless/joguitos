@@ -56,13 +56,15 @@ type AvatarProps = {
   /** Id de mascote oficial, foto (data URL) do mascote personalizado ou emoji antigo. */
   avatar: string;
   size?: "sm" | "md" | "lg" | "xl";
-  /** true: aro verde (conectado). false: sem aro e apagado (caiu). Sem a prop: aro neutro. */
+  /** false: apagado (a pessoa caiu). */
   online?: boolean;
+  /** Mostra o aro verde de "conectado". Só o mascote do topo da sala usa (o seu status). */
+  status?: boolean;
   /** Apaga sem mexer no aro (ex.: quem ainda não apertou PRONTO). */
   faded?: boolean;
 };
 
-export function Avatar({ avatar, size = "md", online, faded }: AvatarProps) {
+export function Avatar({ avatar, size = "md", online, status, faded }: AvatarProps) {
   return (
     <span
       className={cx(
@@ -71,7 +73,7 @@ export function Avatar({ avatar, size = "md", online, faded }: AvatarProps) {
         size === "md" && "size-12 text-3xl ring-[3px]",
         size === "lg" && "size-20 text-5xl ring-4",
         size === "xl" && "size-24 text-6xl ring-4",
-        online === true ? "ring-online" : "ring-line",
+        status && online === true ? "ring-online" : "ring-line",
         online === false && "opacity-45 grayscale",
         faded && "opacity-45",
       )}
