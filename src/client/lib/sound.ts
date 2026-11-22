@@ -15,22 +15,30 @@ function getCtx() {
   return ctx;
 }
 
+/**
+ * Liga (ou religa) o áudio. Precisa rodar dentro de um toque: o celular "adormece" o som quando a
+ * tela apaga ou o app vai para segundo plano, e só deixa acordar com um novo toque.
+ */
+export function unlockAudio() {
+  const c = getCtx();
+  if (!c || c.state === "running") return;
+  // Um som mudo de 1 amostra "acorda" o áudio no iOS.
+  const src = c.createBufferSource();
+  src.buffer = c.createBuffer(1, 1, 22050);
+  src.connect(c.destination);
+  src.start();
+}
+
+/** O som está liberado agora? */
+export const audioReady = () => ctx?.state === "running";
+
+/** Todo toque na página tenta religar o som (barato quando ele já está ligado). */
 export function installAudioUnlock() {
-  const unlock = () => {
-    const c = getCtx();
-    if (!c) return;
-    // Um som mudo de 1 amostra "acorda" o áudio no iOS.
-    const src = c.createBufferSource();
-    src.buffer = c.createBuffer(1, 1, 22050);
-    src.connect(c.destination);
-    src.start();
-    if (c.state === "running") {
-      window.removeEventListener("pointerdown", unlock);
-      window.removeEventListener("keydown", unlock);
-    }
-  };
-  window.addEventListener("pointerdown", unlock);
-  window.addEventListener("keydown", unlock);
+  for (const ev of ["pointerdown", "touchend", "keydown"]) window.addEventListener(ev, unlockAudio, { passive: true });
+  // Voltou para a aba: tenta retomar sem toque (alguns navegadores deixam).
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && ctx && ctx.state !== "running") void ctx.resume().catch(() => {});
+  });
 }
 
 function noiseBuffer(c: AudioContext) {
@@ -199,16 +207,16 @@ export function preloadSample(url: string) {
 }
 
 /** Toca um áudio gravado. Devolve uma função para parar, ou null se não deu para tocar. */
-export async function playSample(url: string, volume = 0.6): Promise<(() => void) | null> {
+export async function playSample(url: string, volume = 0.6, offsetSec = 0): Promise<(() => void) | null> {
   const c = getCtx();
   const buffer = await preloadSample(url);
-  if (!c || !buffer) return null;
+  if (!c || !buffer || offsetSec >= buffer.duration) return null;
   const src = c.createBufferSource();
   src.buffer = buffer;
   const g = c.createGain();
   g.gain.value = volume;
   src.connect(g).connect(c.destination);
-  src.start();
+  src.start(0, offsetSec);
   return () => {
     g.gain.setTargetAtTime(0, c.currentTime, 0.05);
     setTimeout(() => src.stop(), 300);

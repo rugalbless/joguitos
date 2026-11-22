@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { type CardFormat, canShareFiles, shareRanking } from "../lib/shareRanking";
-import { playDrumroll, playFanfare, playReveal, playSample, preloadSample } from "../lib/sound";
+import { audioReady, playDrumroll, playFanfare, playReveal, playSample, preloadSample, unlockAudio } from "../lib/sound";
 import { Confetti } from "./Confetti";
 import { DrumRoll } from "./DrumRoll";
 import { Emoji } from "./Emoji";
@@ -49,7 +49,9 @@ export function FinalReveal({ game, entries, subtitle, unit = "pts", highlight, 
 
   const [step, setStep] = useState<Step>(entries.length ? "podium" : "done");
   const stopDrums = useRef<() => void>(() => {});
-  const revealSound = useRef<() => void>(() => playReveal());
+  const drumsAt = useRef(0);
+  const usedSample = useRef(false);
+  const [muted, setMuted] = useState(false);
   const stepRef = useRef(step);
   stepRef.current = step;
 
@@ -66,20 +68,44 @@ export function FinalReveal({ game, entries, subtitle, unit = "pts", highlight, 
 
   useEffect(() => {
     if (step === "drums") {
-      // Rufar gravado; se não carregar, cai no rufar sintetizado.
-      let usedSample = false;
-      void playSample(DRUM_URL).then((stop) => {
-        // Pularam a revelação enquanto o áudio carregava: não começa a tocar.
-        if (stepRef.current === "done") return stop?.();
-        if (stop) {
-          usedSample = true;
-          stopDrums.current = stop;
-        } else stopDrums.current = playDrumroll((STEPS.reveal - STEPS.drums) / 1000);
-      });
-      revealSound.current = () => (usedSample ? playFanfare() : (stopDrums.current(), playReveal()));
+      drumsAt.current = performance.now();
+      // Som bloqueado (tela apagou, ninguém tocou faz tempo): pede um toque em vez de tocar mudo.
+      if (audioReady()) startDrums();
+      else setMuted(true);
     }
-    if (step === "reveal") revealSound.current();
+    if (step === "reveal") {
+      setMuted(false);
+      if (usedSample.current) playFanfare();
+      else {
+        stopDrums.current();
+        playReveal();
+      }
+    }
+    // startDrums só lê refs
   }, [step]);
+
+  /** Toca o rufar a partir do ponto em que ele deveria estar, para a batida final cair junto da revelação. */
+  function startDrums() {
+    const offset = (performance.now() - drumsAt.current) / 1000;
+    if (offset * 1000 >= DRUM_HIT_MS) return;
+    void playSample(DRUM_URL, 0.6, offset).then((stop) => {
+      // Pularam ou já revelou enquanto o áudio carregava: não começa a tocar.
+      if (stepRef.current === "done" || stepRef.current === "reveal") return stop?.();
+      if (stop) {
+        usedSample.current = true;
+        stopDrums.current = stop;
+      } else stopDrums.current = playDrumroll(Math.max(0.5, DRUM_HIT_MS / 1000 - offset));
+    });
+  }
+
+  /** Toque na tela durante o suspense: religa o som e entra no rufar no ponto certo. */
+  function tapToHear() {
+    unlockAudio();
+    if (muted && (step === "drums" || step === "points" || step === "best")) {
+      setMuted(false);
+      startDrums();
+    }
+  }
 
   const [sharing, setSharing] = useState<CardFormat | null>(null);
   async function share(format: CardFormat) {
@@ -167,7 +193,10 @@ export function FinalReveal({ game, entries, subtitle, unit = "pts", highlight, 
       )}
 
       {at("dark", step) && !done && (
-        <div className="fixed inset-0 z-30 flex animate-fade-in flex-col items-center justify-center gap-6 overflow-hidden bg-stage/95 px-6 text-center text-stage-ink [animation-duration:1.4s]">
+        <div
+          onPointerDown={tapToHear}
+          className="fixed inset-0 z-30 flex animate-fade-in flex-col items-center justify-center gap-6 overflow-hidden bg-stage/95 px-6 text-center text-stage-ink [animation-duration:1.4s]"
+        >
           {/* Holofote */}
           <div className="pointer-events-none absolute left-1/2 top-0 h-[70vh] w-[140vw] -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,color-mix(in_srgb,var(--mustard)_22%,transparent),transparent_65%)]" />
 
@@ -236,6 +265,11 @@ export function FinalReveal({ game, entries, subtitle, unit = "pts", highlight, 
             </>
           )}
 
+          {muted && (
+            <p className="absolute top-[max(1.5rem,env(safe-area-inset-top))] animate-pulse rounded-full bg-stage-ink/15 px-4 py-2 text-sm font-bold">
+              Toque na tela para ouvir o tambor
+            </p>
+          )}
           <button onClick={skip} className="absolute bottom-[max(1.5rem,env(safe-area-inset-bottom))] text-sm font-bold opacity-50">
             Pular
           </button>
