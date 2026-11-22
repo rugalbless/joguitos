@@ -176,3 +176,61 @@ export function playCorrect() {
     o.stop(at + 0.55);
   });
 }
+
+// ---------------------------------------------------------------- áudios gravados
+
+const samples = new Map<string, Promise<AudioBuffer | null>>();
+
+/** Baixa e decodifica um áudio de public/ uma vez só (chame cedo para já estar pronto na hora). */
+export function preloadSample(url: string) {
+  if (!samples.has(url)) {
+    const c = getCtx();
+    samples.set(
+      url,
+      c
+        ? fetch(url)
+            .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
+            .then((b) => c.decodeAudioData(b))
+            .catch(() => null)
+        : Promise.resolve(null),
+    );
+  }
+  return samples.get(url)!;
+}
+
+/** Toca um áudio gravado. Devolve uma função para parar, ou null se não deu para tocar. */
+export async function playSample(url: string, volume = 0.6): Promise<(() => void) | null> {
+  const c = getCtx();
+  const buffer = await preloadSample(url);
+  if (!c || !buffer) return null;
+  const src = c.createBufferSource();
+  src.buffer = buffer;
+  const g = c.createGain();
+  g.gain.value = volume;
+  src.connect(g).connect(c.destination);
+  src.start();
+  return () => {
+    g.gain.setTargetAtTime(0, c.currentTime, 0.05);
+    setTimeout(() => src.stop(), 300);
+  };
+}
+
+/** Só a fanfarra curta (sem prato nem bumbo), para tocar junto da batida final do rufar gravado. */
+export function playFanfare() {
+  const c = getCtx();
+  if (!c) return;
+  const t = c.currentTime + 0.02;
+  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+    const o = c.createOscillator();
+    o.type = "triangle";
+    o.frequency.value = f;
+    const g = c.createGain();
+    const at = t + 0.05 + i * 0.03;
+    g.gain.setValueAtTime(0, at);
+    g.gain.linearRampToValueAtTime(0.06, at + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, at + 1.3);
+    o.connect(g).connect(c.destination);
+    o.start(at);
+    o.stop(at + 1.4);
+  });
+}

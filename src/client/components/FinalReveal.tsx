@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { shareRanking } from "../lib/shareRanking";
-import { playDrumroll, playReveal } from "../lib/sound";
+import { playDrumroll, playFanfare, playReveal, playSample, preloadSample } from "../lib/sound";
 import { Confetti } from "./Confetti";
 import { DrumRoll } from "./DrumRoll";
 import { Emoji } from "./Emoji";
@@ -24,12 +24,17 @@ type Props = {
   onRestart: () => void;
 };
 
+/** Rufar gravado (public/sounds). A batida final dele acontece em DRUM_HIT_MS. */
+const DRUM_URL = "/sounds/drumroll.mp3";
+const DRUM_HIT_MS = 5100;
+
 /**
  * Etapas da revelação, em ms desde que a tela abriu:
  * pódio sobe (3º, 2º e o "?" do 1º) → tela escurece com "E o primeiro lugar vai para…"
  * → tambores → placar do vencedor → destaque → quem é (prato!) → placar completo.
  */
-const STEPS = { dark: 6200, drums: 7600, points: 9000, best: 11800, reveal: 15200, done: 19500 } as const;
+// O 1º lugar aparece exatamente na batida final do rufar (drums + DRUM_HIT_MS).
+const STEPS = { dark: 6200, drums: 7600, points: 8900, best: 10800, reveal: 7600 + DRUM_HIT_MS, done: 7600 + DRUM_HIT_MS + 4300 } as const;
 type Step = "podium" | keyof typeof STEPS;
 const ORDER: Step[] = ["podium", "dark", "drums", "points", "best", "reveal", "done"];
 const at = (step: Step, current: Step) => ORDER.indexOf(current) >= ORDER.indexOf(step);
@@ -44,9 +49,13 @@ export function FinalReveal({ game, entries, subtitle, unit = "pts", highlight, 
 
   const [step, setStep] = useState<Step>(entries.length ? "podium" : "done");
   const stopDrums = useRef<() => void>(() => {});
+  const revealSound = useRef<() => void>(() => playReveal());
+  const stepRef = useRef(step);
+  stepRef.current = step;
 
   useEffect(() => {
     if (!entries.length) return;
+    void preloadSample(DRUM_URL);
     const timers = (Object.entries(STEPS) as [Step, number][]).map(([name, ms]) => setTimeout(() => setStep(name), ms));
     return () => {
       timers.forEach(clearTimeout);
@@ -56,11 +65,20 @@ export function FinalReveal({ game, entries, subtitle, unit = "pts", highlight, 
   }, []);
 
   useEffect(() => {
-    if (step === "drums") stopDrums.current = playDrumroll((STEPS.reveal - STEPS.drums) / 1000);
-    if (step === "reveal") {
-      stopDrums.current();
-      playReveal();
+    if (step === "drums") {
+      // Rufar gravado; se não carregar, cai no rufar sintetizado.
+      let usedSample = false;
+      void playSample(DRUM_URL).then((stop) => {
+        // Pularam a revelação enquanto o áudio carregava: não começa a tocar.
+        if (stepRef.current === "done") return stop?.();
+        if (stop) {
+          usedSample = true;
+          stopDrums.current = stop;
+        } else stopDrums.current = playDrumroll((STEPS.reveal - STEPS.drums) / 1000);
+      });
+      revealSound.current = () => (usedSample ? playFanfare() : (stopDrums.current(), playReveal()));
     }
+    if (step === "reveal") revealSound.current();
   }, [step]);
 
   const [sharing, setSharing] = useState(false);
