@@ -1,5 +1,5 @@
-import { type ChangeEvent, type FormEvent, Suspense, useRef, useState } from "react";
-import { Link, Navigate, useParams } from "react-router";
+import { type ChangeEvent, type FormEvent, Suspense, useEffect, useRef, useState } from "react";
+import { Link, Navigate, useParams, useSearchParams } from "react-router";
 import { GAMES, getGame } from "../../shared/games";
 import { LIMITS, cleanHandle, isValidRoomCode } from "../../shared/protocol";
 import { mascotUrl } from "../../shared/mascots";
@@ -203,6 +203,16 @@ function ProfileForm({ profile, onSave }: { profile: Profile; onSave: (p: Omit<P
 function Lobby({ room }: WithState) {
   const { state, isHost, send, me } = room;
   const selected = getGame(state.gameId);
+
+  // Veio do botão "Jogar" da página de um jogo: o anfitrião já entra com ele escolhido.
+  const [params, setParams] = useSearchParams();
+  const wanted = params.get("jogo");
+  useEffect(() => {
+    if (!wanted) return;
+    const done = state.gameId === wanted || (state.hostId && !isHost) || getGame(wanted)?.status !== "available";
+    if (done) setParams({}, { replace: true });
+    else if (isHost && state.phase === "lobby") send({ type: "select-game", gameId: wanted });
+  }, [wanted, isHost, state.phase, state.gameId, send, setParams]);
   const online = state.players.filter((p) => p.connected).length;
 
   return (

@@ -95,7 +95,7 @@ export function Sobre() {
           </a>
         </section>
 
-        <section className="flex flex-col gap-3 rounded-blob bg-mustard/25 p-5 shadow-cozy ring-1 ring-mustard/40">
+        <section className="flex flex-col gap-3 rounded-blob bg-surface p-5 shadow-cozy ring-1 ring-line">
           <CoffeeCup className="size-14" />
           <div>
             <h2 className="text-xl font-bold">Me paga um café?</h2>

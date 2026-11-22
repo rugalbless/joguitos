@@ -1,5 +1,5 @@
 import { type FormEvent, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { GAMES } from "../../shared/games";
 import { isValidRoomCode } from "../../shared/protocol";
 import { Bouncers } from "../components/Bouncers";
@@ -71,8 +71,9 @@ export function Home() {
         <section className="mt-2">
           <h2 className="mb-3 text-2xl font-bold">Jogos</h2>
           <div className="grid gap-3 sm:grid-cols-2">
-            {GAMES.map((g) => (
-              <Card key={g.id} className={cx("flex gap-4", g.status === "soon" && "opacity-70")}>
+            {GAMES.map((g) => {
+              const card = (
+              <Card className={cx("flex h-full gap-4", g.status === "soon" ? "opacity-70" : "transition hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98]")}>
                 <span className="text-4xl">
                   <Emoji e={g.emoji} />
                 </span>
@@ -88,9 +89,18 @@ export function Home() {
                     </Pill>
                     <Pill>{g.minutes} min</Pill>
                   </div>
+                  {g.status === "available" && <p className="mt-2 text-sm font-bold text-accent">Como jogar →</p>}
                 </div>
               </Card>
-            ))}
+              );
+              return g.status === "available" ? (
+                <Link key={g.id} to={`/jogos/${g.id}`} className="block rounded-blob">
+                  {card}
+                </Link>
+              ) : (
+                <div key={g.id}>{card}</div>
+              );
+            })}
           </div>
         </section>
 
